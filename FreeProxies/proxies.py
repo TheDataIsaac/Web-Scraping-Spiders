@@ -5,8 +5,7 @@ import random
 class Proxy:
     def __init__(self):
         # Define URLs for proxy sources
-        self.hidemy_url = "https://hidemy.io/en/proxy-list/?type=s&anon=234#list"
-        self.free_proxy_url = "https://free-proxy-list.net/"
+        self.urls = ["https://free-proxy-list.net/", "https://hidemy.io/en/proxy-list/?type=s&anon=234#list"]
         
         # Define custom headers for HTTP requests
         self.user_agents = [
@@ -25,23 +24,23 @@ class Proxy:
 
     # Method to fetch proxies from specified URLs
     def get_proxies(self):
-        # Make an initial HTTP request to fetch proxies
-        url = self.hidemy_url
-        response = requests.get(url, headers={"User-Agent": random.choice(self.user_agents)})
-        # Parse the response using BeautifulSoup
-        content = BeautifulSoup(response.text, 'lxml')
-        table = content.find("table").find("tbody").find_all("tr")
-        # Extract proxy information from the table
-        for proxy in table:
-            ip_address=proxy.find_all("td")[0].get_text()
-            port=proxy.find_all("td")[1].get_text()
-            _proxy=":".join([ip_address,port])
-            # Filter proxies based on specific criteria for free-proxy-list.net
-            if url == self.free_proxy_url:
-                if (proxy.find_all("td")[4].get_text()) =="elite proxy" and (proxy.find_all("td")[6].get_text()) == "yes":
+        for url in self.urls:
+            # Make an initial HTTP request to fetch proxies
+            response = requests.get(url, headers={"User-Agent": random.choice(self.user_agents)})
+            # Parse the response using BeautifulSoup
+            content = BeautifulSoup(response.text, 'lxml')
+            table = content.find("table").find("tbody").find_all("tr")
+            # Extract proxy information from the table
+            for proxy in table:
+                ip_address=proxy.find_all("td")[0].get_text()
+                port=proxy.find_all("td")[1].get_text()
+                _proxy=":".join([ip_address,port])
+                # Filter proxies based on specific criteria for free-proxy-list.net
+                if url == self.urls[0]:
+                    if (proxy.find_all("td")[4].get_text()) =="elite proxy" and (proxy.find_all("td")[6].get_text()) == "yes":
+                        self.proxy_list.append(_proxy)
+                else:
                     self.proxy_list.append(_proxy)
-            else:
-                self.proxy_list.append(_proxy)
 
     # Method to test a proxy by making a request using it
     def test_proxy(self, proxy, url):
@@ -75,6 +74,10 @@ class Proxy:
             # If the proxy is working, add it to a list of good proxies
             if is_working:
                 self.good_proxies.append(proxy)
+                
+            # Break after testing 15 proxies    
+            if len(self.good_proxies) == 16:
+                break
 
         # Print the list of good proxies
         print("\nLIST OF GOOD PROXIES:", self.good_proxies)
