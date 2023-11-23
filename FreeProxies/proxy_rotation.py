@@ -1,7 +1,7 @@
 import scrapy
 import random
 from scrapy.crawler import CrawlerProcess
-from proxies import Proxy
+from proxies import Proxy # Import the Proxy class from the proxies module
 from scrapy.spidermiddlewares.httperror import HttpError
 
 
@@ -10,6 +10,7 @@ class UpworkSpider(scrapy.Spider):
     name = 'upworkscraper'
     # Create an instance of the Proxies class
     proxies = Proxy()
+    # Set custom settings for the spider
     custom_settings = {
         "FEEDS": {
             "result.json": {"format": "json"}
@@ -27,7 +28,7 @@ class UpworkSpider(scrapy.Spider):
         proxy = "http://"+random.choice(self.proxies.good_proxies)
 
         print("\nCURRENT START PROXY", proxy)
-
+        # Send the initial request with the chosen proxy
         yield scrapy.Request(url=url,
                              headers=headers,
                              meta={'proxy': proxy, "url" : url, "download_timeout": 20},
@@ -54,7 +55,8 @@ class UpworkSpider(scrapy.Spider):
         # Now explicitly set the proxy for the retry
         proxy = "http://" + random.choice(self.proxies.good_proxies)
         print("\nCURRENT RETRY PROXY", proxy)
-        
+
+        # Retry the request with the new proxy
         yield scrapy.Request(url=url,
                              headers=headers,
                              meta={'proxy': proxy, "url": url},
@@ -80,7 +82,7 @@ class UpworkSpider(scrapy.Spider):
         ]
 
         headers={
-            "User-Agent": random.choice(user_agents),
+            "User-Agent": random.choice(user_agents), # Choose a random user agent
         }
 
         return headers
